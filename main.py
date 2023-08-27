@@ -1,6 +1,8 @@
 import requests
 from json import *
 import pprint as p
+import time
+import sched as sehed
 
 class Сhampionships(object):
     '''Класс для хранения результатов'''
@@ -91,10 +93,31 @@ def get_calculation_match(chmps:'''list("Сhampionships")''')->object:
             print(chmp.name_cmp)
             print(name_at +' '+ name_ht+'\n' + gluing_string)
 
-url ='https://ad.betcity.ru/d/on_air/events' # Берем данные с сайта 
-response = requests.get(url)
-body_dict =response.json()
-# with open('Event.txt','w') as file:
+##Выполнение основного кода
+def main_function():
+    try:
+        url ='https://ad.betcity.ru/d/on_air/events' # Берем данные с сайта 
+        response = requests.get(url, timeout=(5.0,5.0))
+    except requests.ConnectionError as e:        
+        print("Ошибка подключения")
+        return False
+    
+    body_dict =response.json()
+    # with open('Event.txt','w') as file:
     # file.write(body_dict)
-# p.pprint(parseJson(body_dict,'46',eventid=False)) # number: 46 (настольный тенис)
-get_calculation_match(get_evts(parseJson(body_dict,'46',eventid=False)))
+    # p.pprint(parseJson(body_dict,'46',eventid=False)) # number: 46 (настольный тенис)
+    get_calculation_match(get_evts(parseJson(body_dict,'46',eventid=False)))
+
+
+    #main_function() # выполнение основного кода
+sehedule = sehed.scheduler(time.time,time.sleep)
+def discription_shed():
+    sehedule.enter(10,2,discription_shed)
+    try:
+        main_function()
+    except Exception as e:
+        print("Второе исключение" + e)
+## Запуск программы
+if __name__ == '__main__':
+        discription_shed()
+        sehedule.run()
